@@ -2,20 +2,20 @@
 Singularity and docker containers for Tools for weather and climate data analysis tools.
 
 
-##Details
+## Details
 Two containers are available, one for singularity/apptainer and one for Docker.
 These provide a `conda` environment in which `cf-python`, `cf-plot`, `cfview`,
 `esmvaltool` and `iris` are available.
 
-##Usage
+## Usage
 The containers are designed to be used via an interactive shell when started.
 `esmvaltool` and `cfview` can be started via the command line, and `cf-python`,
 `cf-plot` and `iris` are available within `python`.
 
-##Singularity/apptainer.
+## Singularity/apptainer.
 
 
-###Setup for apptainer
+### Setup for apptainer
 If using `apptainer`, the SylabsCloud continer library needs to be configured.
 This step isn't required for `singularity`.
 ```
@@ -41,7 +41,7 @@ and run with
 ```
 $ singularity shell -B /run datatools_latest.sif
 ```
-##Docker.
+## Docker.
 
 The `docker` container is downloded with:
 
