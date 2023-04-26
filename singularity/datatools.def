@@ -1,0 +1,38 @@
+Bootstrap: docker
+
+From: condaforge/mambaforge
+
+%post
+
+#Update
+apt-get -y update
+
+#qt5 for cfview plus other tools/compilers 
+DEBIAN_FRONTEND=noninteractive apt-get -y install qt5-default graphviz plantuml
+
+#mamba update
+mamba update -y --name base mamba conda
+. /opt/conda/etc/profile.d/conda.sh
+
+#emsvaltool
+mamba create -y --name datatools esmvaltool-python
+conda activate datatools
+
+#cf and others
+mamba install -c conda-forge cf-python cf-plot ipython gcc gfortran gdb make cmake libtool
+conda clean --all -y
+pip install cf-view #Not yet in conda
+
+#nuke dash
+rm /bin/sh
+ln -s /bin/bash /bin/sh
+
+#script
+echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+echo "conda activate datatools" >> $SINGULARITY_ENVIRONMENT
+
+%environment
+export PYTHONNOUSERSITE=1
+
+%help
+General tools for data analysis.
