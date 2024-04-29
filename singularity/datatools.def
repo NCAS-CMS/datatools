@@ -24,8 +24,8 @@ mamba update -y conda mamba pip --quiet && mamba create -y --name datatools
 . /opt/conda/etc/profile.d/conda.sh
 conda activate datatools
 
-#base tools tools
-mamba install -c conda-forge ipython gcc gfortran gdb make cmake libtool h5py udunits2 -y --quiet && conda clean --all -y
+#base tools tools, including Jupyterlab, unlike in the Docker version. Deliberately!
+mamba install -c conda-forge ipython jupyterlab gcc gfortran gdb make cmake libtool h5py udunits2 -y --quiet && conda clean --all -y
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
