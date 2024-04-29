@@ -1,38 +1,53 @@
 Bootstrap: docker
-
 From: condaforge/mambaforge
+Stage: spython-base
 
 %post
+export DEBIAN_FRONTEND=noninteractive
 
-#Update
-apt-get -y update
+#Update and install extra tools.
+apt-get -y update && apt-get -y install graphviz plantuml git software-properties-common
 
-#qt5 for cfview plus other tools/compilers 
-DEBIAN_FRONTEND=noninteractive apt-get -y install qt5-default graphviz plantuml
+# Unfortunately mambaforge is still on ubuntu:focal, which means qt6 isn't available there
+add-apt-repository ppa:okirby/qt6-backports
+apt-get update && apt-get -y install xterm qt6-base-dev libxcb-cursor0
 
-#mamba update
-mamba update -y --name base mamba conda
+# Use this to debug x11 etc
+# then do an ldd on the library which reports an error
+#ENV QT_DEBUG_PLUGINS=1
+
+#mamba update and emsvaltool
+mamba update -y conda mamba pip --quiet && mamba create -y --name datatools
+
+#set conda env
+#SHELL ["conda", "run", "--name", "datatools", "/bin/bash", "--login", "-c"]
 . /opt/conda/etc/profile.d/conda.sh
-
-#emsvaltool
-mamba create -y --name datatools esmvaltool-python
 conda activate datatools
 
-#cf and others
-mamba install -c conda-forge cf-python cf-plot ipython gcc gfortran gdb make cmake libtool
-conda clean --all -y
-pip install cf-view #Not yet in conda
+#base tools tools
+mamba install -c conda-forge ipython gcc gfortran gdb make cmake libtool h5py udunits2 -y --quiet && conda clean --all -y
+
+
+# We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
+pip install git+https://github.com/davidhassell/cfdm@h5-read
+pip install git+https://github.com/davidhassell/cf-python@active-storage
+pip install pyqt6
+export CACHE_BUSTER=1
+pip install git+https://github.com/ncas-cms/cf-view@qt6
 
 #nuke dash
-rm /bin/sh
-ln -s /bin/bash /bin/sh
+rm /bin/sh&&ln -s /bin/bash /bin/sh
 
-#script
+export PYTHONNOUSERSITE=1
+
+# containerised .bashrc not used so use SINGULARITY_ENVIRONMENT
+#echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc&&echo "conda activate datatools" >> ~/.bashrc
 echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
 echo "conda activate datatools" >> $SINGULARITY_ENVIRONMENT
 
 %environment
 export PYTHONNOUSERSITE=1
-
-%help
-General tools for data analysis.
+%runscript
+exec /bin/bash "$@"
+%startscript
+exec /bin/bash "$@"
