@@ -29,8 +29,8 @@ mamba install -c conda-forge ipython jupyterlab gcc gfortran gdb make cmake libt
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
-pip install git+https://github.com/davidhassell/cfdm@h5-read
-pip install git+https://github.com/davidhassell/cf-python@active-storage
+pip install git+https://github.com/davidhassell/cfdm@h5-read-0
+pip install git+https://github.com/davidhassell/cf-python@active-storage-0
 pip install pyqt6
 export CACHE_BUSTER=1
 pip install git+https://github.com/ncas-cms/cf-view@qt6

@@ -23,8 +23,8 @@ RUN mamba install -c conda-forge ipython gcc gfortran gdb make cmake libtool h5p
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
-RUN pip install git+https://github.com/davidhassell/cfdm@h5-read
-RUN pip install git+https://github.com/davidhassell/cf-python@active-storage
+RUN pip install git+https://github.com/davidhassell/cfdm@h5-read-0
+RUN pip install git+https://github.com/davidhassell/cf-python@active-storage-0
 RUN pip install pyqt6
 ARG CACHE_BUSTER=1
 RUN pip install git+https://github.com/ncas-cms/cf-view@qt6
