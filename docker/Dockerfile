@@ -19,7 +19,7 @@ RUN mamba update -y conda mamba pip && mamba create -y --name datatools
 SHELL ["conda", "run", "--name", "datatools", "/bin/bash", "--login", "-c"]
 
 #base tools tools
-RUN mamba install -c conda-forge ipython gcc gfortran gdb make cmake libtool h5py udunits2 && conda clean --all -y
+RUN mamba install -c conda-forge ipython gcc gfortran gdb make cmake libtool h5py netcdf4 udunits2 && conda clean --all -y
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
