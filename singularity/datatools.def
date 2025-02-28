@@ -2,6 +2,8 @@ Bootstrap: docker
 From: condaforge/mambaforge
 Stage: spython-base
 
+# updated 28/02/2025 to use mamba and not pin cfdm and cf-python to specific branches
+
 %post
 export DEBIAN_FRONTEND=noninteractive
 
@@ -21,16 +23,16 @@ mamba update -y conda mamba pip --quiet && mamba create -y --name datatools
 
 #set conda env
 #SHELL ["conda", "run", "--name", "datatools", "/bin/bash", "--login", "-c"]
-. /opt/conda/etc/profile.d/conda.sh
-conda activate datatools
+. /opt/conda/etc/profile.d/mamba.sh
+mamba activate datatools
 
 #base tools tools, including Jupyterlab, notebook, and xarray, unlike in the Docker version. Deliberately!
 mamba install -c conda-forge ipython jupyterlab gcc gfortran gdb make cmake netcdf4 libtool h5py udunits2 notebook xarray -y --quiet && conda clean --all -y
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
-pip install git+https://github.com/davidhassell/cfdm@h5-read-0
-pip install git+https://github.com/davidhassell/cf-python@active-storage-0
+pip install cfdm
+pip install cf-python
 pip install pyqt6
 export CACHE_BUSTER=1
 pip install git+https://github.com/ncas-cms/cf-view@qt6
@@ -41,9 +43,9 @@ rm /bin/sh&&ln -s /bin/bash /bin/sh
 export PYTHONNOUSERSITE=1
 
 # containerised .bashrc not used so use SINGULARITY_ENVIRONMENT
-#echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc&&echo "conda activate datatools" >> ~/.bashrc
-echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
-echo "conda activate datatools" >> $SINGULARITY_ENVIRONMENT
+#echo ". /opt/conda/etc/profile.d/mamba.sh" >> ~/.bashrc&&echo "mamba activate datatools" >> ~/.bashrc
+echo ". /opt/conda/etc/profile.d/mamba.sh" >> $SINGULARITY_ENVIRONMENT
+echo "mamba activate datatools" >> $SINGULARITY_ENVIRONMENT
 
 %environment
 export PYTHONNOUSERSITE=1
