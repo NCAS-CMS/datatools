@@ -3,6 +3,7 @@ From: condaforge/mambaforge
 Stage: spython-base
 
 # updated 28/02/2025 to use mamba and not pin cfdm and cf-python to specific branches
+# could probalby try and avoid the use of backports, but didn't do that this year.
 
 %post
 export DEBIAN_FRONTEND=noninteractive
@@ -12,14 +13,14 @@ apt-get -y update && apt-get -y install graphviz plantuml git software-propertie
 
 # Unfortunately mambaforge is still on ubuntu:focal, which means qt6 isn't available there
 add-apt-repository ppa:okirby/qt6-backports
-apt-get update && apt-get -y install xterm qt6-base-dev libxcb-cursor0
+apt-get update && apt-get -y install xterm qt6-base-dev vim-gtk3 libxcb-cursor0
 
 # Use this to debug x11 etc
 # then do an ldd on the library which reports an error
 #ENV QT_DEBUG_PLUGINS=1
 
 #mamba update and emsvaltool
-mamba update -y conda mamba pip --quiet && mamba create -y --name datatools
+mamba update -y conda mamba pip --quiet && mamba create -y --name datatools python=3.12
 
 #set conda env
 #SHELL ["conda", "run", "--name", "datatools", "/bin/bash", "--login", "-c"]
@@ -27,7 +28,7 @@ mamba update -y conda mamba pip --quiet && mamba create -y --name datatools
 mamba activate datatools
 
 #base tools tools, including Jupyterlab, notebook, and xarray, unlike in the Docker version. Deliberately!
-mamba install -c conda-forge ipython jupyterlab gcc gfortran gdb make cmake netcdf4 libtool h5py udunits2 notebook xarray -y --quiet && conda clean --all -y
+mamba install -c conda-forge ipython jupyterlab gcc gfortran make cmake netcdf4 libtool h5py udunits2 notebook xarray -y --quiet && conda clean --all -y
 
 
 # We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
