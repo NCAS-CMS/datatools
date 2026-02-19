@@ -1,57 +1,108 @@
 Bootstrap: docker
-From: condaforge/mambaforge
-Stage: spython-base
+From: ubuntu:24.04
 
-# updated 28/02/2025 to use mamba and not pin cfdm and cf-python to specific branches
-# could probalby try and avoid the use of backports, but didn't do that this year.
+%labels
+    Author NCAS-CMS
+    Description "datatools with micromamba and PyQt6"
 
 %post
-export DEBIAN_FRONTEND=noninteractive
+    set -e
 
-#Update and install extra tools.
-apt-get -y update && apt-get -y install graphviz plantuml git software-properties-common
+    # ---- system base ----
+    apt-get update && apt-get install -y \
+        ca-certificates \
+        curl \
+        bzip2 \
+        build-essential \
+        git \
+        pkg-config \
+        libgl1 \
+        libxkbcommon0 \
+        libxrandr2 \
+        libxi6 \
+        libxtst6 \
+        vim-gtk3 \
+        libxcb-cursor0 \
+        qt6-base-dev \
+        qt6-base-dev-tools \
+        proj-bin \
+        proj-data \
+        graphviz \
+        plantuml \
+        software-properties-common \
+	xterm \
+    	libx11-6 \
+   	libx11-xcb1 \
+   	libxcb1 \
+   	libxcb-cursor0 \
+   	libxcb-keysyms1 \
+   	libxcb-render0 \
+   	libxcb-shm0 \
+   	libxcb-xinerama0 \
+   	libxrender1 \
+   	libxext6 \
+   	libxfixes3 \
+   	libglu1-mesa \
+        libglx-mesa0 \
+   	libgl1-mesa-dri \
+	mesa-utils \
+        x11-utils \
+	libxcb-icccm4 \
+    	libxcb-image0 \
+    	libxcb-render-util0 \
+    	libxcb-xkb1 \
+    	libxkbcommon-x11-0 \
+	&& rm -rf /var/lib/apt/lists/*
 
-# Unfortunately mambaforge is still on ubuntu:focal, which means qt6 isn't available there
-add-apt-repository ppa:okirby/qt6-backports
-apt-get update && apt-get -y install xterm qt6-base-dev vim-gtk3 libxcb-cursor0
 
-# Use this to debug x11 etc
-# then do an ldd on the library which reports an error
-#ENV QT_DEBUG_PLUGINS=1
+    # ---- install micromamba ----
+    curl -L https://micro.mamba.pm/api/micromamba/linux-64/latest \
+        | tar -xvj -C /usr/local/bin --strip-components=1 bin/micromamba
 
-#mamba update and emsvaltool
-mamba update -y conda mamba pip --quiet && mamba create -y --name datatools python=3.12
+    # ---- micromamba config ----
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export PATH=/usr/local/bin:$PATH
 
-#set conda env
-#SHELL ["conda", "run", "--name", "datatools", "/bin/bash", "--login", "-c"]
-. /opt/conda/etc/profile.d/mamba.sh
-mamba activate datatools
+    # ---- create environment ----
+    micromamba create -y -p /opt/env \
+        -c conda-forge \
+	python=3.12 \
+  	ipython \
+  	jupyterlab \
+  	notebook \
+  	gcc \
+  	gfortran \
+  	make \
+  	cmake \
+  	libtool \
+  	netcdf4 \
+  	h5py \
+  	h5netcdf \
+  	pyfive \
+  	udunits2 \
+  	xarray \
+  	pip
 
-#base tools tools, including Jupyterlab, notebook, and xarray, unlike in the Docker version. Deliberately!
-mamba install -c conda-forge ipython jupyterlab gcc gfortran make cmake netcdf4 libtool h5py h5netcdf pyfive udunits2 notebook xarray -y --quiet && conda clean --all -y
+    # ---- install python deps ----
+    /opt/env/bin/pip install --no-cache-dir \
+        pyqt6 \
+	cfdm \
+	cf-python \
+        cf-view \
+	cfs3        
 
-
-# We need to use pip to get exactly the versions we need. Hopefuly we wont need this from June 2024
-pip install cfdm
-pip install cf-python
-pip install pyqt6
-pip install cfs3
-export CACHE_BUSTER=1
-pip install git+https://github.com/ncas-cms/cf-view@qt6
-
-#nuke dash
-rm /bin/sh&&ln -s /bin/bash /bin/sh
-
-export PYTHONNOUSERSITE=1
-
-# containerised .bashrc not used so use SINGULARITY_ENVIRONMENT
-#echo ". /opt/conda/etc/profile.d/mamba.sh" >> ~/.bashrc&&echo "mamba activate datatools" >> ~/.bashrc
-echo ". /opt/conda/etc/profile.d/mamba.sh" >> $SINGULARITY_ENVIRONMENT
-echo "mamba activate datatools" >> $SINGULARITY_ENVIRONMENT
+    # ---- cleanup and nuke dash ----
+    micromamba clean -a -y
+    rm /bin/sh && ln -s /bin/bash /bin/sh
 
 %environment
-export PYTHONNOUSERSITE=1
+    # runtime environment
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export PATH=/opt/env/bin:/usr/local/bin:$PATH
+    export PYTHONNOUSERSITE=1
+    export CACHE_BUSTER=1
+
 %runscript
-exec /bin/bash "$@"
+    exec /bin/bash "$@"
 %startscript
-exec /bin/bash "$@"
+    exec /bin/bash "$@"
